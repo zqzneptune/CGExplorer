@@ -1,6 +1,6 @@
 # CGExplorer: Chemo-Genomic Screening Data Preprocessor & Visualizer
 
-**CGExplorer** is an R package and Shiny application designed for lab researchers to quickly preprocess, perform quality control, analyze, and visualize high-throughput Chemo-Genomic Screening datasets (such as Tecan 384-well plate reader outputs for bacterial mutant libraries under chemical/drug treatments).
+**CGExplorer** is an R package and Shiny application designed for lab researchers to quickly preprocess, perform quality control, analyze, and visualize high-throughput Chemo-Genomic Screening datasets (such as plate reader outputs for bacterial mutant libraries under chemical/drug treatments).
 
 The package provides S4 data structures (`Plate`, `Batch`, `PlateRegistry`), automated data preprocessing pipelines, chemo-genomic interaction scoring, interactive `plotly` visualizations, and a full-featured Shiny GUI.
 
