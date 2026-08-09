@@ -24,23 +24,19 @@ The package provides S4 data structures (`Plate`, `Batch`, `PlateRegistry`), aut
 
 ## Installation
 
-### Option 1: Install from GitHub
-
 ```R
-# Install remotes if not already installed
-if (!requireNamespace("remotes", quietly = TRUE)) {
-  install.packages("remotes")
+# Install pak if not already installed
+if (!requireNamespace("pak", quietly = TRUE)) {
+  install.packages("pak")
 }
 
 # Install CGExplorer package
-remotes::install_github("zqzneptune/CGExplorer/CGExplorer")
+pak::pak("zqzneptune/CGExplorer")
 ```
 
 ---
 
-## Usage
-
-### 1. Launching the Interactive Shiny App
+## Launching the Interactive Shiny App
 
 ```R
 library(CGExplorer)
