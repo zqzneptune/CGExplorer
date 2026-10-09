@@ -7,7 +7,7 @@ app_ui <- function(request) {
   tagList(
     shinyjs::useShinyjs(),
     dashboardPage(
-      dashboardHeader(title = "CGExplorer v0.3.1"),
+      dashboardHeader(title = "CGExplorer v0.3.2"),
       dashboardSidebar(
         sidebarMenu(
           id = "tabs",

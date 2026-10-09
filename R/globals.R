@@ -24,6 +24,7 @@ if (getRversion() >= "2.15.1") {
     "fill_val", "label_text", "log_cg_score", "mean_log_cg", "n_bad_blanks",
     "n_mutants", "n_total_blanks", "p_value", "pass_blank", "pass_wt",
     "sd_log_cg", "tooltip_text", "w_control", "w_drug", "w_wt_drug",
-    "x_coord", "y_coord", "z_score"
+    "x_coord", "y_coord", "z_score",
+    "Date_Str", "OD_Plot", "Panel_Title"
   ))
 }

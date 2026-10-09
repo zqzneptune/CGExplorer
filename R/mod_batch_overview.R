@@ -8,7 +8,14 @@ mod_batch_overview_ui <- function(id) {
         box(title = "Select Batch", width = 12, status = "primary", solidHeader = TRUE,
             uiOutput(ns("batch_selector")),
             hr(),
-            uiOutput(ns("batch_info"))
+            uiOutput(ns("batch_info")),
+            hr(),
+            h5(strong(icon("file-pdf"), " Export Growth Curves")),
+            p(style = "color: #666; font-size: 12px;",
+              "One page per strain (WT/controls first, then mutants), one panel per plate, one line per well."),
+            radioButtons(ns("pdf_mode"), NULL, inline = TRUE,
+                         choices = c("Raw OD" = "raw", "Corrected OD" = "corrected"), selected = "raw"),
+            downloadButton(ns("dl_growth_pdf"), "Download Growth Curves (PDF)", class = "btn-primary")
         )
       ),
       column(8,
@@ -121,6 +128,39 @@ mod_batch_overview_server <- function(id, rv) {
       
       plot_replicate_growth_curves(sub_df, stain_hr = 26)
     })
+    
+    # Multi-page per-strain growth curve PDF for the active batch
+    output$dl_growth_pdf <- downloadHandler(
+      filename = function() {
+        b_name <- input$sel_batch
+        if (is.null(b_name) || b_name == "No batches available") b_name <- "batch"
+        mode_label <- if (identical(input$pdf_mode, "corrected")) "Corrected_OD" else "Raw_OD"
+        safe <- gsub("[^A-Za-z0-9_.-]+", "_", b_name)
+        sprintf("%s_%s_growth_curves_%s.pdf", safe, mode_label, format(Sys.Date(), "%Y-%m-%d"))
+      },
+      content = function(file) {
+        b <- active_batch()
+        if (is.null(b)) {
+          showNotification("Select a batch before exporting.", type = "error")
+          stop("No batch selected.")
+        }
+        mode <- if (identical(input$pdf_mode, "corrected")) "corrected" else "raw"
+        tryCatch({
+          withProgress(message = sprintf("Rendering %s growth curves", b@name), value = 0, {
+            export_batch_growth_curves_pdf(
+              rv$registry, b@name, file, mode = mode,
+              progress = function(i, n, strain) {
+                setProgress(i / n, detail = sprintf("%d / %d: %s", i, n, strain))
+              }
+            )
+          })
+        }, error = function(e) {
+          showNotification(paste("PDF export failed:", conditionMessage(e)), type = "error", duration = 10)
+          stop(e)
+        })
+      },
+      contentType = "application/pdf"
+    )
     
   })
 }

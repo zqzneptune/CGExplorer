@@ -1,7 +1,7 @@
 Package: CGExplorer
 Type: Package
 Title: Chemo-Genomic Screening Data Preprocessor and Visualizer
-Version: 0.3.1
+Version: 0.3.2
 Authors@R: person("Qingzhou Zhang", role = c("aut", "cre"), email = "zqzneptune@hotmail.com")
 Description: An R package providing S4 data structures, analysis methods, and a Shiny
     application for preprocessing, quality control, and chemo-genomic interaction scoring
@@ -26,6 +26,7 @@ Imports:
     plotly,
     DT,
     ggplot2,
+    grDevices,
     RColorBrewer,
     tools,
     uuid
@@ -59,6 +60,7 @@ Collate:
     'mod_scoring.R'
     'parsers.R'
     'plotting.R'
+    'plotting_pdf.R'
     'processing.R'
     'run_app.R'
     'scoring.R'
