@@ -43,15 +43,18 @@ jobs:
       - name: Build package
         shell: Rscript {0}
         run: |
-          pkgbuild::build(binary = TRUE, dest_path = "dist")
-          pkgbuild::build(binary = FALSE, dest_path = "dist")
-          print(list.files("dist"))
+          dir.create("dist", showWarnings = FALSE)
+          bin_pkg <- pkgbuild::build(binary = TRUE, dest_path = "dist")
+          src_pkg <- pkgbuild::build(binary = FALSE, dest_path = "dist")
+          message("Built binary: ", bin_pkg)
+          message("Built source: ", src_pkg)
+          print(list.files("dist", full.names = TRUE))
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: pkg-${{ matrix.config.os }}
-          path: dist/*
+          path: dist/
 
   release:
     name: Create GitHub Release
@@ -65,6 +68,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: dist-merged
+          pattern: pkg-*
           merge-multiple: true
 
       - name: Determine tag name
@@ -77,7 +81,9 @@ jobs:
           fi
 
       - name: List files to release
-        run: ls -la dist-merged/
+        run: |
+          mkdir -p dist-merged
+          ls -la dist-merged/
 
       - name: Create or update Release
         uses: softprops/action-gh-release@v2
