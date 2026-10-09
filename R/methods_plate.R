@@ -54,6 +54,26 @@ setMethod("compute_metrics", "Plate", function(plate, blank_thr = 0.05, growth_t
   wt_stats <- growth_m %>%
     dplyr::filter(Type == "WT" | Type == "WT_Control")
   
+  # Automated Failure Checks
+  all_blanks_bad <- isTRUE(res$all_blanks_contaminated)
+  all_wt_bad <- (nrow(wt_stats) > 0 && all(wt_stats$Is_Not_Growing == "Y"))
+  auto_qc_passed <- !(all_blanks_bad || all_wt_bad)
+  
+  # Check for existing user override flag
+  existing_user_status <- if (!is.null(plate@qc_flags$user_override)) plate@qc_flags$user_override else NULL
+  final_qc_passed <- if (!is.null(existing_user_status)) {
+    identical(existing_user_status, "PASSED")
+  } else {
+    auto_qc_passed
+  }
+  
+  failure_reasons <- character(0)
+  if (all_blanks_bad) failure_reasons <- c(failure_reasons, "All blank wells contaminated")
+  if (all_wt_bad) failure_reasons <- c(failure_reasons, "All WT control wells failed to grow")
+  if (!is.null(existing_user_status) && existing_user_status == "FAILED") {
+    failure_reasons <- c(failure_reasons, "Manually set to FAILED by user")
+  }
+
   # 4. Populate Plate
   plate@metrics <- list(
     corrected = corr_df,
@@ -62,6 +82,10 @@ setMethod("compute_metrics", "Plate", function(plate, blank_thr = 0.05, growth_t
   )
   
   plate@qc_flags <- list(
+    qc_passed = final_qc_passed,
+    auto_qc_passed = auto_qc_passed,
+    user_override = existing_user_status,
+    failure_reasons = failure_reasons,
     blank_stats = res$blank_stats,
     removed_blanks = res$removed_blanks,
     wt_stats = wt_stats

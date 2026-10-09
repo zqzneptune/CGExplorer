@@ -90,6 +90,13 @@ score_batch_dataset <- function(pheno_df, strategy_type = c("NoDrug_Plates", "No
     
     # -- STRATEGY 2: USING NODRUG WELLS ---------------
     if (strategy_type == "NoDrug_Wells") {
+      has_nodrug_wells <- "Is_NoDrug_Control" %in% names(metric_df) && 
+        any(metric_df$Is_NoDrug_Control == "Y" | metric_df$Is_NoDrug_Control == TRUE, na.rm = TRUE)
+      
+      if (!has_nodrug_wells) {
+        stop("Intra-plate calculation (NoDrug_Wells) is unavailable because no '_NoDrug' control wells are present on the plate layout.")
+      }
+      
       drug_only_df <- metric_df %>% dplyr::filter(Treatment != control_drug)
       
       well_agg <- drug_only_df %>%

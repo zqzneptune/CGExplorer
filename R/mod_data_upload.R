@@ -262,6 +262,9 @@ mod_data_upload_server <- function(id, trigger, rv) {
         if (!is.null(media_val) && media_val != "") p@media <- media_val
         if (!is.null(label_val) && label_val != "") p@label <- label_val
         
+        # Compute metrics and QC flags upon creation
+        p <- compute_metrics(p)
+        
         rv$registry <- add_plate(rv$registry, p)
       }
       

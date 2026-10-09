@@ -26,6 +26,7 @@ export(save_registry)
 export(score_batch_dataset)
 export(subtract_plate_blanks)
 export(update_plate)
+export(validate_batch_plates)
 exportClasses(Batch)
 exportClasses(Plate)
 exportClasses(PlateRegistry)
@@ -46,11 +47,15 @@ import(shiny)
 import(shinydashboard)
 import(tidyr)
 importFrom(golem,with_golem_options)
-importFrom(stats,median)
-importFrom(stats,p.adjust)
-importFrom(stats,pnorm)
-importFrom(stats,sd)
-importFrom(stats,setNames)
-importFrom(utils,head)
-importFrom(utils,tail)
+importFrom(stats,
+  median,
+  p.adjust,
+  pnorm,
+  sd,
+  setNames
+)
+importFrom(utils,
+  head,
+  tail
+)
 importFrom(uuid,UUIDgenerate)

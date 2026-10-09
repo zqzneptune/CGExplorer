@@ -29,11 +29,12 @@ subtract_plate_blanks <- function(df, blank_threshold = 0.05) {
     dplyr::filter(Type == "Blank") %>%
     dplyr::anti_join(bad_blanks, by = c("Row", "Column"))
     
-  # If all blanks are contaminated, fallback to all blanks
-  if (nrow(clean_blanks) == 0 && nrow(growth_blanks) > 0) {
-    message("All blanks are contaminated. Falling back to using all blanks.")
+  all_blanks_bad <- (nrow(clean_blanks) == 0 && nrow(growth_blanks) > 0)
+  
+  # If all blanks are contaminated, fallback to all blanks for median calculation but record flag
+  if (all_blanks_bad) {
+    message("All blanks are contaminated. Marking plate QC failure and falling back to all blanks.")
     clean_blanks <- df %>% dplyr::filter(Type == "Blank")
-    bad_blanks <- data.frame(Row = character(), Column = character())
   }
   
   plate_blank_medians <- clean_blanks %>%
@@ -47,7 +48,7 @@ subtract_plate_blanks <- function(df, blank_threshold = 0.05) {
       OD_Corrected = pmax(OD_Raw - Blank_Median_OD, 0.01)
     )
   
-  return(list(data = df_corr, removed_blanks = bad_blanks, blank_stats = growth_blanks))
+  return(list(data = df_corr, removed_blanks = bad_blanks, blank_stats = growth_blanks, all_blanks_contaminated = all_blanks_bad))
 }
 
 #' Extract growth metrics

@@ -51,8 +51,14 @@ mod_batch_builder_server <- function(id, rv) {
       
       plates <- rv$registry@plates[uuids]
       
+      status_vec <- sapply(plates, function(p) {
+        pass <- if (!is.null(p@qc_flags$qc_passed)) isTRUE(p@qc_flags$qc_passed) else TRUE
+        if (pass) "PASSED" else "FAILED"
+      })
+      
       df <- data.frame(
         ` ` = rep("", length(uuids)),
+        Status = status_vec,
         `Start Time` = sapply(plates, function(p) format(p@t0, "%Y-%m-%d %H:%M")),
         Treatment = sapply(plates, function(p) p@treatment),
         Media = sapply(plates, function(p) p@media),
@@ -69,7 +75,7 @@ mod_batch_builder_server <- function(id, rv) {
                       pageLength = 10, dom = 'ftip',
                       columnDefs = list(
                         list(orderable = FALSE, className = 'select-checkbox', targets = 0),
-                        list(visible = FALSE, targets = c(6, 7))
+                        list(visible = FALSE, targets = c(7, 8))
                       ),
                       select = list(style = 'multi', selector = 'td:first-child')
                     ))
@@ -87,7 +93,9 @@ mod_batch_builder_server <- function(id, rv) {
           p(strong(sprintf("Selected %d plates:", length(uuids)))),
           tags$ul(
             lapply(uuids, function(u) {
-              tags$li(sprintf("%s + %s + Rep%s", plates[[u]]@media, plates[[u]]@treatment, plates[[u]]@replicate))
+              p_obj <- plates[[u]]
+              p_status <- if (!is.null(p_obj@qc_flags$qc_passed) && !p_obj@qc_flags$qc_passed) " [FAILED]" else ""
+              tags$li(sprintf("%s + %s + Rep%s%s", p_obj@media, p_obj@treatment, p_obj@replicate, p_status))
             })
           )
         )
@@ -143,13 +151,20 @@ mod_batch_builder_server <- function(id, rv) {
       
       uuids <- ordered_uuids()[sel]
       
-      b <- new_batch(name = input$batch_name, plate_uuids = uuids)
-      rv$registry <- add_batch(rv$registry, b)
-      save_registry(rv$registry)
-      
-      shinyjs::info("Batch created successfully.")
-      updateTextInput(session, "batch_name", value = "")
-      DT::dataTableProxy("dt_plates") %>% DT::selectRows(NULL)
+      # Validate plate usability and layout uniformity
+      tryCatch({
+        validate_batch_plates(rv$registry, uuids)
+        
+        b <- new_batch(name = input$batch_name, plate_uuids = uuids)
+        rv$registry <- add_batch(rv$registry, b)
+        save_registry(rv$registry)
+        
+        shinyjs::info("Batch created successfully.")
+        updateTextInput(session, "batch_name", value = "")
+        DT::dataTableProxy("dt_plates") %>% DT::selectRows(NULL)
+      }, error = function(e) {
+        shinyjs::alert(paste("Batch creation blocked:", e$message))
+      })
     })
     
   })

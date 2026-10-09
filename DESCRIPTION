@@ -1,7 +1,7 @@
 Package: CGExplorer
 Type: Package
 Title: Chemo-Genomic Screening Data Preprocessor and Visualizer
-Version: 0.3.0
+Version: 0.3.1
 Authors@R: person("Qingzhou Zhang", role = c("aut", "cre"), email = "zqzneptune@hotmail.com")
 Description: An R package providing S4 data structures, analysis methods, and a Shiny
     application for preprocessing, quality control, and chemo-genomic interaction scoring
@@ -38,7 +38,7 @@ LazyData: false
 Config/testthat/edition: 3
 URL: https://github.com/zqzneptune/CGExplorer
 BugReports: https://github.com/zqzneptune/CGExplorer/issues
-Config/roxygen2/version: 8.0.0
+Config/roxygen2/version: 8.1.0
 Collate: 
     'CGExplorer-package.R'
     'app_server.R'

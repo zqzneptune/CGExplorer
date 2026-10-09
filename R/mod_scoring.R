@@ -47,6 +47,38 @@ mod_scoring_server <- function(id, rv) {
       }
     })
     
+    # Observe selected batch to toggle Intra-Plate strategy availability based on _NoDrug wells
+    observeEvent(input$selected_batch, {
+      req(input$selected_batch)
+      b_name <- input$selected_batch
+      if (b_name == "No batches available") return()
+      
+      batch <- rv$registry@batches[[b_name]]
+      if (is.null(batch) || length(batch@plate_uuids) == 0) return()
+      
+      has_nodrug <- FALSE
+      for (u in batch@plate_uuids) {
+        p <- rv$registry@plates[[u]]
+        if (!is.null(p) && !is.null(p@layout)) {
+          if ("Is_NoDrug_Control" %in% names(p@layout)) {
+            if (any(p@layout$Is_NoDrug_Control == TRUE | p@layout$Is_NoDrug_Control == "Y", na.rm = TRUE)) {
+              has_nodrug <- TRUE
+              break
+            }
+          }
+        }
+      }
+      
+      if (has_nodrug) {
+        updateSelectInput(session, "strategy", 
+                          choices = c("NoDrug Plates (Inter-plate)" = "NoDrug_Plates", 
+                                      "NoDrug Wells (Intra-plate)" = "NoDrug_Wells"))
+      } else {
+        updateSelectInput(session, "strategy", 
+                          choices = c("NoDrug Plates (Inter-plate)" = "NoDrug_Plates"))
+      }
+    })
+    
     observeEvent(input$btn_score, {
       b_name <- input$selected_batch
       if (is.null(b_name) || b_name == "No batches available") {

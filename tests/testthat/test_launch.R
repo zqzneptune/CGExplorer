@@ -1,5 +1,7 @@
-library(testthat)
-library(CGExplorer)
+if (!suppressWarnings(require(CGExplorer, quietly = TRUE))) {
+  r_files <- list.files("../../R", full.names = TRUE)
+  if (length(r_files) > 0) lapply(r_files, source)
+}
 
 test_that("app launches and S4 classes work", {
   # Test PlateRegistry constructor

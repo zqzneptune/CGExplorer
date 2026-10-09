@@ -7,14 +7,14 @@ app_ui <- function(request) {
   tagList(
     shinyjs::useShinyjs(),
     dashboardPage(
-      dashboardHeader(title = "CGExplorer v0.3"),
+      dashboardHeader(title = "CGExplorer v0.3.1"),
       dashboardSidebar(
         sidebarMenu(
           id = "tabs",
           menuItem("Plate Inventory", tabName = "plates", icon = icon("home")),
           menuItem("Batch Builder", tabName = "batch_builder", icon = icon("cogs")),
-          # menuItem("Batch Overview", tabName = "batch_overview", icon = icon("microscope")),
-          # menuItem("Scoring", tabName = "scoring", icon = icon("chart-bar")),
+          menuItem("Batch Overview", tabName = "batch_overview", icon = icon("microscope")),
+          menuItem("Scoring", tabName = "scoring", icon = icon("chart-bar")),
           menuItem("Plate QC", tabName = "qc", icon = icon("search")),
           menuItem("About", tabName = "about", icon = icon("info-circle"))
         ),

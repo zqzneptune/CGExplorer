@@ -1,6 +1,42 @@
 #' @include classes.R generics.R
 NULL
 
+#' Validate plate eligibility and layout uniformity for a batch
+#'
+#' @param registry PlateRegistry
+#' @param uuids character vector of plate UUIDs
+#' @return TRUE if valid, otherwise throws an error
+#' @export
+validate_batch_plates <- function(registry, uuids) {
+  if (length(uuids) < 2) stop("A Batch must reference at least 2 plates.")
+  
+  plates <- registry@plates[uuids]
+  for (u in uuids) {
+    p <- plates[[u]]
+    if (is.null(p)) stop(sprintf("Plate %s not found in registry.", u))
+    
+    # 1. Usability / QC Passed Check
+    is_passed <- if (!is.null(p@qc_flags$qc_passed)) isTRUE(p@qc_flags$qc_passed) else TRUE
+    if (!is_passed) {
+      plate_name <- ifelse(is.na(p@label) || p@label == "", p@slot_id, p@label)
+      stop(sprintf("Plate '%s' is marked FAILED and cannot be included in a batch.", plate_name))
+    }
+  }
+  
+  # 2. Strict Layout Uniformity Check
+  ref_layout <- plates[[1]]@layout
+  if (nrow(ref_layout) > 0) {
+    for (i in 2:length(plates)) {
+      curr_layout <- plates[[i]]@layout
+      if (!isTRUE(all.equal(ref_layout, curr_layout, check.attributes = FALSE))) {
+        stop("Layout mismatch detected: All plates in a batch must share the exact same 384-well layout sheet.")
+      }
+    }
+  }
+  
+  return(TRUE)
+}
+
 #' Assemble pheno_df for scoring
 #'
 #' @param registry PlateRegistry
@@ -8,16 +44,24 @@ NULL
 #' @return data.frame ready for scoring
 #' @noRd
 assemble_pheno_df <- function(registry, uuids, batch_name) {
+  validate_batch_plates(registry, uuids)
+  
   list_dfs <- list()
   for (u in uuids) {
     p <- registry@plates[[u]]
-    if (is.null(p) || is.null(p@metrics) || length(p@metrics) == 0) {
-      warning(sprintf("Plate %s lacks computed metrics, skipping.", u))
-      next
+    if (is.null(p)) next
+    if (is.null(p@metrics) || length(p@metrics) == 0) {
+      tryCatch({
+        p <- compute_metrics(p)
+        registry@plates[[u]] <- p
+      }, error = function(e) NULL)
     }
     
     growth_m <- p@metrics$growth
-    if (is.null(growth_m)) next
+    if (is.null(growth_m)) {
+      warning(sprintf("Plate %s lacks computed metrics, skipping.", u))
+      next
+    }
     
     # Extract phenotype columns
     df <- growth_m %>% 
@@ -41,8 +85,11 @@ assemble_pheno_df <- function(registry, uuids, batch_name) {
       df$Is_Contaminated_Blank <- "N"
     }
     
+    has_nodrug_col <- "Is_NoDrug_Control" %in% names(df)
+    is_nodrug_vec <- if (has_nodrug_col) (df$Is_NoDrug_Control == TRUE | df$Is_NoDrug_Control == "Y") else FALSE
+    
     df <- df %>% dplyr::mutate(
-      Is_NonGrowing_Control = ifelse(Is_NoDrug_Control == "Y" & Is_Not_Growing == "Y", "Y", "N"),
+      Is_NonGrowing_Control = ifelse(is_nodrug_vec & Is_Not_Growing == "Y", "Y", "N"),
       Exclude_From_Scoring = ifelse(Is_Contaminated_Blank == "Y" | Is_NonGrowing_Control == "Y", "Y", "N")
     )
     

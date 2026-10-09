@@ -3,9 +3,10 @@
 mod_plate_card_ui <- function(id, plate, selected = FALSE) {
   ns <- NS(id)
   
-  # Format dates
+  # Format dates and elapsed duration
   t0_str <- format(plate@t0, "%Y-%m-%d %H:%M")
-  tend_str <- format(plate@t_end, "%H:%M")
+  duration_hrs <- round(as.numeric(difftime(plate@t_end, plate@t0, units = "hours")), 1)
+  time_disp <- sprintf("%s + %.1f hours", t0_str, duration_hrs)
   
   # Status badges
   has_staining <- !is.null(plate@assays$staining)
@@ -30,11 +31,20 @@ mod_plate_card_ui <- function(id, plate, selected = FALSE) {
     span(class = "label label-success", "Blanks OK")
   }
   
-  merged_tag <- if (plate@is_merged) span(class = "label label-info", "Merged") else NULL
+  # QC Usability badge
+  qc_passed <- if (!is.null(plate@qc_flags$qc_passed)) isTRUE(plate@qc_flags$qc_passed) else TRUE
+  status_badge <- if (qc_passed) {
+    span(class = "label label-success", "\u2713 PASSED")
+  } else {
+    span(class = "label label-danger", "\u274c FAILED")
+  }
   
+  merged_tag <- if (plate@is_merged) span(class = "label label-info", "Merged") else NULL
   plate_label <- sprintf("%s + %s + Rep%s", plate@media, plate@treatment, plate@replicate)
   
-  div(class = "box box-solid box-primary", style = "margin-bottom: 15px; width: 320px; display: inline-block; vertical-align: top; margin-right: 15px;",
+  box_class <- if (qc_passed) "box box-solid box-primary" else "box box-solid box-danger"
+
+  div(class = box_class, style = "margin-bottom: 15px; width: 320px; display: inline-block; vertical-align: top; margin-right: 15px;",
       div(class = "box-header with-border", style = "padding: 8px 10px;",
           h3(class = "box-title", 
              style = "display: flex; align-items: center; gap: 8px; font-size: 14px; margin: 0;",
@@ -42,7 +52,8 @@ mod_plate_card_ui <- function(id, plate, selected = FALSE) {
              span(strong(plate_label), span(style = "color:#888; font-size:12px;", sprintf("(%s)", plate@slot_id)), merged_tag))
       ),
       div(class = "box-body", style = "padding: 10px;",
-          p(strong("Time: "), t0_str, " \u2192 ", tend_str, style = "margin: 0; font-size: 13px;"),
+          p(strong("Status: "), status_badge, style = "margin: 0 0 4px 0; font-size: 13px;"),
+          p(strong("Time: "), time_disp, style = "margin: 0; font-size: 13px;"),
           p(strong("Staining: "), staining_badge, style = "margin: 0; font-size: 13px;")
       ),
       div(class = "box-footer", style = "padding: 8px 10px;",
@@ -135,6 +146,14 @@ mod_plate_card_server <- function(id, plate, rv) {
                      )
                    )
             )
+          ),
+          fluidRow(
+            column(12,
+                   radioButtons(ns("edit_qc_status"), "QC Usability Status",
+                                choices = c("PASSED" = "PASSED", "FAILED" = "FAILED"),
+                                inline = TRUE,
+                                selected = if(!is.null(current_p@qc_flags$qc_passed) && !current_p@qc_flags$qc_passed) "FAILED" else "PASSED")
+            )
           )
         ),
         footer = tagList(
@@ -157,6 +176,13 @@ mod_plate_card_server <- function(id, plate, rv) {
       } else {
         current_p@staining_hr <- as.numeric(NA)
       }
+      
+      current_p@qc_flags$user_override <- input$edit_qc_status
+      
+      # Re-compute metrics with updated metadata/staining hours & override
+      try({
+        current_p <- compute_metrics(current_p)
+      }, silent = TRUE)
       
       rv$registry <- update_plate(rv$registry, current_p)
       save_registry(rv$registry)
