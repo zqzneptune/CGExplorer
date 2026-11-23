@@ -75,10 +75,12 @@ jobs:
         id: get_tag
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "tag=${{ github.event.inputs.tag_name }}" >> $GITHUB_OUTPUT
+            TAG="${{ github.event.inputs.tag_name }}"
           else
-            echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+            TAG="${GITHUB_REF#refs/tags/}"
           fi
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+          echo "version=${TAG#v}" >> $GITHUB_OUTPUT
 
       - name: List files to release
         run: |
@@ -97,16 +99,16 @@ jobs:
             
             **Windows users (binary without compilation tools):**
             ```R
-            install.packages("https://github.com/zqzneptune/CGExplorer/releases/download/${{ steps.get_tag.outputs.tag }}/CGExplorer_0.3.2.zip", repos = NULL, type = "win.binary")
+            install.packages("https://github.com/zqzneptune/CGExplorer/releases/download/${{ steps.get_tag.outputs.tag }}/CGExplorer_${{ steps.get_tag.outputs.version }}.zip", repos = NULL, type = "win.binary")
             ```
 
             **macOS users (Apple Silicon):**
             ```R
-            install.packages("https://github.com/zqzneptune/CGExplorer/releases/download/${{ steps.get_tag.outputs.tag }}/CGExplorer_0.3.2.tgz", repos = NULL, type = "mac.binary")
+            install.packages("https://github.com/zqzneptune/CGExplorer/releases/download/${{ steps.get_tag.outputs.tag }}/CGExplorer_${{ steps.get_tag.outputs.version }}.tgz", repos = NULL, type = "mac.binary")
             ```
 
             **Source package (all platforms):**
             ```R
-            install.packages("https://github.com/zqzneptune/CGExplorer/releases/download/${{ steps.get_tag.outputs.tag }}/CGExplorer_0.3.2.tar.gz", repos = NULL, type = "source")
+            install.packages("https://github.com/zqzneptune/CGExplorer/releases/download/${{ steps.get_tag.outputs.tag }}/CGExplorer_${{ steps.get_tag.outputs.version }}.tar.gz", repos = NULL, type = "source")
             ```
           files: dist-merged/*
