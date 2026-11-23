@@ -1,5 +1,20 @@
 # CGExplorer NEWS
 
+## CGExplorer 0.4.0 (2026-11-22)
+
+### New Features
+* **Metric-Level Combining Scoring (`Metric_Combined`)**: Added `score_batch_metric_combined()`, `huber_pheno_stats()`, and `filter_low_growth_mutants()`, and extended `score_batch_dataset()` / `score_batch()` to combine plate-level phenotypes across replicates before deriving relative fitness and interaction scores:
+  - **Average (Mean)**: Mean plate-level phenotype across replicates.
+  - **Min (Worst-Case)**: Minimum plate-level phenotype across replicates.
+  - **Max (Best-Case)**: Maximum plate-level phenotype across replicates.
+  - **Robust Variance-Aware**: Huber IRLS robust location with Empirical Bayes moderated phenotypic variance (`d0 = 3`), delta-method SE propagation to `se_log2_cg`, screen-wide MAD scale, James-Stein shrinkage, and total-variance Z-scores.
+* **Redesigned Scoring Module (`mod_scoring`)**:
+  - Parallel mode selector for **One-vs-One** (choose control basis and replicate pair to compare) vs. **Merge (Metric-Level)** (choose `Average`, `Min`, `Max`, or `Variance-Aware`, with optional low-growth QC toggle off by default).
+  - Explicit **Run Scoring** button that generates, plots (**Ranked Hits Plot**), tabulates (**Scoring Table**), and exports (**Download All Results (CSV)**) all unfiltered results.
+  - Added **4-Strategy Comparison** tab showing Sensitive vs. Resistant hit counts and cross-strategy overlap across all four merge strategies.
+
+---
+
 ## CGExplorer 0.3.2 (2026-10-09)
 
 ### New Features

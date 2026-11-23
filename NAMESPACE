@@ -8,7 +8,9 @@ export(detect_staining_jump)
 export(export_batch_growth_curves_pdf)
 export(extract_biofilm_metrics)
 export(extract_growth_metrics)
+export(filter_low_growth_mutants)
 export(get_layout)
+export(huber_pheno_stats)
 export(load_registry)
 export(merge_plates)
 export(new_batch)
@@ -25,6 +27,7 @@ export(remove_plate)
 export(run_cgexplorer_app)
 export(save_registry)
 export(score_batch_dataset)
+export(score_batch_metric_combined)
 export(subtract_plate_blanks)
 export(update_plate)
 export(validate_batch_plates)
@@ -49,6 +52,7 @@ import(shinydashboard)
 import(tidyr)
 importFrom(golem,with_golem_options)
 importFrom(stats,
+  mad,
   median,
   p.adjust,
   pnorm,

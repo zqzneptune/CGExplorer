@@ -6,19 +6,23 @@
 \usage{
 score_batch_dataset(
   pheno_df,
-  strategy_type = c("NoDrug_Plates", "NoDrug_Wells"),
+  strategy_type = c("NoDrug_Plates", "NoDrug_Wells", "Metric_Combined"),
   metrics,
-  control_drug = "NoDrug"
+  control_drug = "NoDrug",
+  ...
 )
 }
 \arguments{
 \item{pheno_df}{data.frame containing aggregated phenotypic metrics across a batch}
 
-\item{strategy_type}{character, either "NoDrug_Plates" or "NoDrug_Wells"}
+\item{strategy_type}{character, one of `"NoDrug_Plates"`, `"NoDrug_Wells"`, or `"Metric_Combined"`}
 
 \item{metrics}{character vector of target metrics}
 
 \item{control_drug}{character, name of control treatment}
+
+\item{...}{additional arguments passed to `score_batch_metric_combined()` when
+`strategy_type == "Metric_Combined"` (e.g., `combine_strategies`, `exclude_low_growth`).}
 }
 \value{
 data.frame of scores

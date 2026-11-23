@@ -117,18 +117,24 @@ setMethod("score_batch", "Batch", function(batch, registry, strategies, metrics,
   for (strat in strategies) {
     if (is.null(batch@scores[[strat]])) batch@scores[[strat]] <- list()
     
-    res <- score_batch_dataset(pheno_df, strategy_type = strat, metrics = metrics, control_drug = control_drug)
+    res <- score_batch_dataset(pheno_df, strategy_type = strat, metrics = metrics, control_drug = control_drug, ...)
     if (nrow(res) > 0) {
+      excl_attr <- attr(res, "excluded_low_growth_genes")
       for (met in unique(res$Metric)) {
-        batch@scores[[strat]][[met]] <- res %>% dplyr::filter(Metric == met)
+        met_df <- res %>% dplyr::filter(Metric == met)
+        if (!is.null(excl_attr)) attr(met_df, "excluded_low_growth_genes") <- excl_attr
+        batch@scores[[strat]][[met]] <- met_df
       }
     }
   }
   
-  batch@scoring_params <- list(
-    strategies = strategies,
-    metrics = metrics,
-    control_drug = control_drug
+  batch@scoring_params <- c(
+    list(
+      strategies = strategies,
+      metrics = metrics,
+      control_drug = control_drug
+    ),
+    list(...)
   )
   
   batch

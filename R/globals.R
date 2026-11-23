@@ -25,6 +25,14 @@ if (getRversion() >= "2.15.1") {
     "n_mutants", "n_total_blanks", "p_value", "pass_blank", "pass_wt",
     "sd_log_cg", "tooltip_text", "w_control", "w_drug", "w_wt_drug",
     "x_coord", "y_coord", "z_score",
-    "Date_Str", "OD_Plot", "Panel_Title"
+    "Date_Str", "OD_Plot", "Panel_Title",
+    ".__trt__", "WT_Endpoint_OD", "Mean_NoDrug_Endpoint_OD", "Mean_NoDrug_Delta_OD",
+    "Mean_NoDrug_AUC", "Rel_NoDrug_Endpoint_OD", "Is_Low_Growth", "Phenotype_Val",
+    "WT_Plate_P", "WT_Rob", "N_Replicates", "Phenotype_Combined", "Phenotype_SD",
+    "Phenotype_NoDrug", "SD_NoDrug", "WT_NoDrug_P", "expected_w_drug", "Combine_Strategy",
+    "res", "Phenotype_Rob", "var_p", "k_eff", "s0_sq_p", "d0_p", "mod_var_p", "se_rob_p",
+    "SE_NoDrug_P", "cg_score_raw", "log2_cg_raw", "se_log2_cg", "sigma_screen",
+    "sigma_sq", "se_sq", "tot_var", "shrinkage_factor", "FDR adj. p", "N Strategies Hit",
+    "Best adj. p"
   ))
 }
